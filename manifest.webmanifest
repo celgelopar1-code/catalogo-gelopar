@@ -3,7 +3,7 @@
   "short_name": "Catálogo Gelopar",
   "description": "Catálogo técnico de produtos Gelopar.",
   "lang": "pt-BR",
-  "start_url": "./CATALOGO_GELOPAR.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
