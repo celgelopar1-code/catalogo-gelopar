@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#173b57">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Catálogo Técnico</title>
 <style>
 :root{--navy:#173b57;--blue:#1769aa;--blue-light:#eaf4fc;--green:#237849;--green-light:#eaf6ee;--ink:#1d2935;--muted:#647484;--line:#dce4eb;--surface:#f4f7fa;--white:#fff}
@@ -77,18 +78,16 @@ header.hero{display:grid;grid-template-columns:1.15fr 1fr;padding:0;overflow:hid
 
 
 /* Imagem do produto */
-.result-top{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 180px auto;gap:16px;align-items:center}
+.result-top{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 112px auto;gap:16px;align-items:center}
 .product-title{min-width:0}
-.product-image-wrap{width:280px;height:280px;border-radius:16px;display:grid;place-items:center;background:#f4f6f8;overflow:hidden;border:1px solid #e3e8ee;padding:8px}
-.product-image{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center;display:none}
+.product-image-wrap{width:112px;height:112px;border-radius:16px;display:grid;place-items:center;background:#f4f6f8;overflow:hidden;border:1px solid #e3e8ee}
+.product-image{width:100%;height:100%;object-fit:contain;display:none}
 .product-image-fallback{font-size:.72rem;line-height:1.2;text-align:center;color:#7b8794;padding:8px}
 @media (max-width:600px){
- .result-top{grid-template-columns:minmax(0,1fr) 150px;gap:10px}
- .product-image-wrap{width:180px;height:180px;padding:6px}
+ .result-top{grid-template-columns:minmax(0,1fr) 88px;gap:10px}
+ .product-image-wrap{width:88px;height:88px}
  .result-top .status{grid-column:1/-1;justify-self:start}
 }
-
-@media(max-width:420px){.result-top{grid-template-columns:minmax(0,1fr) 128px}.product-image-wrap{width:160px;height:160px;padding:5px}}
 
 </style>
 </head>
@@ -147,13 +146,8 @@ function renderDetails(p){
   skuEl.textContent=p.sku; modelEl.textContent=p.model;
   const productImage=document.getElementById("productImage");
   const productImageFallback=document.getElementById("productImageFallback");
-  function driveImageUrl(url){
-    if(!url) return "";
-    const m=String(url).match(/\/file\/d\/([^/]+)/);
-    return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1200" : String(url);
-  }
   productImage.onerror=()=>{productImage.style.display="none";productImageFallback.style.display="block"};
-  if(p.imageUrl){productImage.src=driveImageUrl(p.imageUrl);productImage.style.display="block";productImageFallback.style.display="none"}else{productImage.removeAttribute("src");productImage.style.display="none";productImageFallback.style.display="block"}
+  if(p.imageUrl){productImage.src=p.imageUrl;productImage.style.display="block";productImageFallback.style.display="none"}else{productImage.removeAttribute("src");productImage.style.display="none";productImageFallback.style.display="block"}
   setDocLink("paramsLink","paramsCaption",p.paramsUrl,p,"parâmetros PDF");
   setDocLink("specLink","specCaption",p.specUrl,p,"ficha técnica PDF");
   setDocLink("manualLink","manualCaption",p.manualUrl,p,"manual do produto PDF");
