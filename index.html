@@ -146,14 +146,43 @@ function renderDetails(p){
   skuEl.textContent=p.sku; modelEl.textContent=p.model;
   const productImage=document.getElementById("productImage");
   const productImageFallback=document.getElementById("productImageFallback");
-  productImage.onerror=()=>{productImage.style.display="none";productImageFallback.style.display="block"};
-  if(p.imageUrl){
-    const imageUrl = String(p.imageUrl);
-    const match = imageUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-    productImage.src = match ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000` : imageUrl;
-    productImage.style.display="block";
-    productImageFallback.style.display="none";
-  }else{productImage.removeAttribute("src");productImage.style.display="none";productImageFallback.style.display="block"}
+  let imageCandidates=[];
+let imageAttempt=0;
+
+productImage.onerror=()=>{
+  imageAttempt++;
+  if(imageAttempt < imageCandidates.length){
+    productImage.src=imageCandidates[imageAttempt];
+    return;
+  }
+  productImage.style.display="none";
+  productImageFallback.style.display="block";
+};
+
+if(p.imageUrl){
+  const imageUrl = String(p.imageUrl);
+  const match = imageUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+
+  if(match){
+    const fileId = match[1];
+    imageCandidates = [
+      `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`,
+      `https://drive.google.com/uc?export=view&id=${fileId}`,
+      `https://lh3.googleusercontent.com/d/${fileId}=w1000`
+    ];
+  }else{
+    imageCandidates = [imageUrl];
+  }
+
+  imageAttempt=0;
+  productImage.src=imageCandidates[0];
+  productImage.style.display="block";
+  productImageFallback.style.display="none";
+}else{
+  productImage.removeAttribute("src");
+  productImage.style.display="none";
+  productImageFallback.style.display="block";
+}
   setDocLink("paramsLink","paramsCaption",p.paramsUrl,p,"parâmetros PDF");
   setDocLink("specLink","specCaption",p.specUrl,p,"ficha técnica PDF");
   setDocLink("manualLink","manualCaption",p.manualUrl,p,"manual do produto PDF");
@@ -238,13 +267,6 @@ function render(){
 searchInput.addEventListener("input",()=>{selectedSku=null;selectedByClick=false;render()});
 // Ao abrir o catálogo, aparecem somente a pesquisa e a instrução inicial.
 hideProduct();resultList.classList.add("hidden");noResults.classList.add("hidden");
-</script>
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
-  });
-}
 </script>
 </body>
 </html>
