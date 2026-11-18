@@ -80,7 +80,7 @@ header.hero{display:grid;grid-template-columns:1.15fr 1fr;padding:0;overflow:hid
 .result-top{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 180px auto;gap:16px;align-items:center}
 .product-title{min-width:0}
 .product-image-wrap{width:280px;height:280px;border-radius:16px;display:grid;place-items:center;background:#f4f6f8;overflow:hidden;border:1px solid #e3e8ee;padding:8px}
-.product-image{width:100%;height:100%;object-fit:contain;object-position:center;display:none;max-width:100%;max-height:100%;width:auto;height:auto}
+.product-image{width:100%;height:100%;object-fit:contain;object-position:center;display:none;max-width:100%;max-height:100%;max-width:100%;max-height:100%;width:auto;height:auto}
 .product-image-fallback{font-size:.72rem;line-height:1.2;text-align:center;color:#7b8794;padding:8px}
 @media (max-width:600px){
  .result-top{grid-template-columns:minmax(0,1fr) 150px;gap:10px}
@@ -148,9 +148,9 @@ function renderDetails(p){
   const productImage=document.getElementById("productImage");
   const productImageFallback=document.getElementById("productImageFallback");
   function driveImageUrl(url){
-    // Mantém o link original do Google Drive, que é o formato autorizado
-    // na planilha e que já foi confirmado como funcional no catálogo.
-    return url || "";
+    if(!url) return "";
+    const m=String(url).match(/\/file\/d\/([^/]+)/);
+    return m ? "https://drive.google.com/uc?export=view&id=" + m[1] : String(url);
   }
   productImage.onerror=()=>{productImage.style.display="none";productImageFallback.style.display="block"};
   if(p.imageUrl){productImage.src=driveImageUrl(p.imageUrl);productImage.style.display="block";productImageFallback.style.display="none"}else{productImage.removeAttribute("src");productImage.style.display="none";productImageFallback.style.display="block"}
