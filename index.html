@@ -268,5 +268,12 @@ searchInput.addEventListener("input",()=>{selectedSku=null;selectedByClick=false
 // Ao abrir o catálogo, aparecem somente a pesquisa e a instrução inicial.
 hideProduct();resultList.classList.add("hidden");noResults.classList.add("hidden");
 </script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
 </body>
 </html>
