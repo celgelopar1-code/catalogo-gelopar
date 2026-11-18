@@ -150,9 +150,9 @@ function renderDetails(p){
   function driveImageUrl(url){
     if(!url) return "";
     const m=url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-    if(m) return "https://drive.google.com/uc?export=view&id="+encodeURIComponent(m[1])";
+    if(m) return "https://drive.google.com/uc?export=view&id="+encodeURIComponent(m[1]);
     const q=url.match(/[?&]id=([^&]+)/);
-    if(q) return "https://drive.google.com/uc?export=view&id="+encodeURIComponent(q[1])";
+    if(q) return "https://drive.google.com/uc?export=view&id="+encodeURIComponent(q[1]);
     return url;
   }
   productImage.onerror=()=>{productImage.style.display="none";productImageFallback.style.display="block"};
