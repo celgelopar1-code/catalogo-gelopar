@@ -147,8 +147,16 @@ function renderDetails(p){
   skuEl.textContent=p.sku; modelEl.textContent=p.model;
   const productImage=document.getElementById("productImage");
   const productImageFallback=document.getElementById("productImageFallback");
+  function driveImageUrl(url){
+    if(!url) return "";
+    const m=url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+    if(m) return "https://drive.google.com/thumbnail?id="+encodeURIComponent(m[1])+"&sz=w1200";
+    const q=url.match(/[?&]id=([^&]+)/);
+    if(q) return "https://drive.google.com/thumbnail?id="+encodeURIComponent(q[1])+"&sz=w1200";
+    return url;
+  }
   productImage.onerror=()=>{productImage.style.display="none";productImageFallback.style.display="block"};
-  if(p.imageUrl){productImage.src=p.imageUrl;productImage.style.display="block";productImageFallback.style.display="none"}else{productImage.removeAttribute("src");productImage.style.display="none";productImageFallback.style.display="block"}
+  if(p.imageUrl){productImage.src=driveImageUrl(p.imageUrl);productImage.style.display="block";productImageFallback.style.display="none"}else{productImage.removeAttribute("src");productImage.style.display="none";productImageFallback.style.display="block"}
   setDocLink("paramsLink","paramsCaption",p.paramsUrl,p,"parâmetros PDF");
   setDocLink("specLink","specCaption",p.specUrl,p,"ficha técnica PDF");
   setDocLink("manualLink","manualCaption",p.manualUrl,p,"manual do produto PDF");
