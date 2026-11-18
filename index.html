@@ -150,7 +150,7 @@ function renderDetails(p){
   function driveImageUrl(url){
     if(!url) return "";
     const m=String(url).match(/\/file\/d\/([^/]+)/);
-    return m ? "https://drive.google.com/uc?export=view&id=" + m[1] : String(url);
+    return m ? "https://drive.google.com/thumbnail?id=" + m[1] + "&sz=w1200" : String(url);
   }
   productImage.onerror=()=>{productImage.style.display="none";productImageFallback.style.display="block"};
   if(p.imageUrl){productImage.src=driveImageUrl(p.imageUrl);productImage.style.display="block";productImageFallback.style.display="none"}else{productImage.removeAttribute("src");productImage.style.display="none";productImageFallback.style.display="block"}
