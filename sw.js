@@ -1,9 +1,10 @@
-const CACHE_NAME = 'gelopar-catalogo-v1';
+const CACHE_NAME = 'gelopar-catalogo-v2';
 
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
+  './sw.js',
   './icon-192.png',
   './icon-512.png'
 ];
