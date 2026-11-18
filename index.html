@@ -148,12 +148,9 @@ function renderDetails(p){
   const productImage=document.getElementById("productImage");
   const productImageFallback=document.getElementById("productImageFallback");
   function driveImageUrl(url){
-    if(!url) return "";
-    const m=url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-    if(m) return "https://drive.google.com/uc?export=view&id="+encodeURIComponent(m[1]);
-    const q=url.match(/[?&]id=([^&]+)/);
-    if(q) return "https://drive.google.com/uc?export=view&id="+encodeURIComponent(q[1]);
-    return url;
+    // Mantém o link original do Google Drive, que é o formato autorizado
+    // na planilha e que já foi confirmado como funcional no catálogo.
+    return url || "";
   }
   productImage.onerror=()=>{productImage.style.display="none";productImageFallback.style.display="block"};
   if(p.imageUrl){productImage.src=driveImageUrl(p.imageUrl);productImage.style.display="block";productImageFallback.style.display="none"}else{productImage.removeAttribute("src");productImage.style.display="none";productImageFallback.style.display="block"}
