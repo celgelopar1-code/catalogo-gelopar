@@ -116,7 +116,7 @@ header.hero{display:grid;grid-template-columns:1.15fr 1fr;padding:0;overflow:hid
 <section class="panel" aria-label="Pesquisa de produtos">
 <label for="search">Pesquisar SKU ou descrição do modelo</label>
 <input id="search" type="search" placeholder="Ex.: 80104.10.1 ou GCB-23" autocomplete="off">
-<p class="hint" id="resultCount">3955 produtos cadastrados. Digite o SKU ou parte do modelo.</p>
+<p class="hint" id="resultCount">3986 produtos cadastrados. Digite o SKU ou parte do modelo.</p>
 <div id="resultList" class="result-list"></div>
 </section>
 <section id="product" class="panel" aria-live="polite">
@@ -135,6 +135,12 @@ header.hero{display:grid;grid-template-columns:1.15fr 1fr;padding:0;overflow:hid
 <section id="orientationPanel" class="panel"><h2 class="section-title">Orientação</h2><div class="fields" id="orientationFields"></div></section>
 <section id="noResults" class="panel empty hidden" aria-live="polite"><strong>Nenhum produto encontrado</strong>Confira o SKU ou tente pesquisar por outra parte da descrição.</section>
 <p class="footnote">Pesquise pelo SKU completo ou pela descrição do modelo. Use Lista de Peças para consultar os componentes cadastrados para o SKU. Os links cadastrados abrem os documentos diretamente; quando algum link estiver em branco, o botão pesquisa o documento ou vídeo no Google Drive. O acesso depende da conexão com a internet e das permissões de compartilhamento.</p>
+<div id="productImageModal" class="modal-backdrop hidden piece-image-modal" role="dialog" aria-modal="true" aria-label="Imagem ampliada do produto">
+  <section class="image-viewer">
+    <button type="button" class="modal-close" id="closeProductImageModal" aria-label="Fechar">×</button>
+    <img id="productImageLarge" alt="Imagem ampliada do produto">
+  </section>
+</div>
 <div id="pieceImageModal" class="modal-backdrop hidden piece-image-modal" role="dialog" aria-modal="true" aria-label="Imagem ampliada da peça">
   <section class="image-viewer">
     <button type="button" class="modal-close" id="closePieceImageModal" aria-label="Fechar">×</button>
@@ -162,7 +168,16 @@ const partsLink=document.getElementById("partsLink");
 let selectedSku=null, selectedByClick=false;
 function normalize(v){return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim()}
 function driveSearchUrl(p, doc){return "https://drive.google.com/drive/search?q="+encodeURIComponent(p.sku+" "+p.model+" "+doc)}
-function displayValue(v){return v&&String(v).trim()?String(v):"Não informado"}
+function displayValue(v){
+  if(v===null || v===undefined || String(v).trim()==="") return "Não informado";
+  const s=String(v).trim();
+  const m=s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T].*)?$/);
+  if(m){
+    if(m[1]==="9999" && m[2]==="12" && m[3]==="31") return "Atual";
+    return `${m[3]}/${m[2]}/${m[1]}`;
+  }
+  return s;
+}
 function setDocLink(linkId, captionId, url, p, doc){
   const link=document.getElementById(linkId);
   link.href=url||driveSearchUrl(p,doc);
@@ -186,25 +201,13 @@ productImage.onerror=()=>{
 };
 
 if(p.imageUrl){
-  const imageUrl = String(p.imageUrl);
-  const match = imageUrl.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-
-  if(match){
-    const fileId = match[1];
-    imageCandidates = [
-      `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`,
-      `https://drive.google.com/uc?export=view&id=${fileId}`,
-      `https://lh3.googleusercontent.com/d/${fileId}=w1000`
-    ];
+    imageCandidates = pieceImageCandidates(p.imageUrl,"w1000");
+    imageAttempt=0;
+    productImage.referrerPolicy="no-referrer";
+    productImage.src=imageCandidates[0];
+    productImage.style.display="block";
+    productImageFallback.style.display="none";
   }else{
-    imageCandidates = [imageUrl];
-  }
-
-  imageAttempt=0;
-  productImage.src=imageCandidates[0];
-  productImage.style.display="block";
-  productImageFallback.style.display="none";
-}else{
   productImage.removeAttribute("src");
   productImage.style.display="none";
   productImageFallback.style.display="block";
@@ -243,19 +246,49 @@ document.getElementById("videoLink").addEventListener("click",e=>{e.preventDefau
 document.getElementById("closeVideoModal").addEventListener("click",closeVideoModal);
 document.getElementById("videoListModal").addEventListener("click",e=>{if(e.target.id==="videoListModal")closeVideoModal()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeVideoModal()});
+function extractDriveFileId(url){
+  const u=String(url||"").trim();
+  if(!u) return "";
+  let m=u.match(/drive\.google\.com\/file\/d\/([^/?#]+)/);
+  if(m) return m[1];
+  m=u.match(/[?&]id=([^&#]+)/);
+  if(m) return m[1];
+  m=u.match(/drive\.usercontent\.google\.com\/download\?id=([^&#]+)/);
+  if(m) return m[1];
+  return "";
+}
 function pieceImageCandidates(url, size="w1000"){
   const u=String(url||"").trim();
   if(!u)return [];
-  const match=u.match(/drive\.google\.com\/file\/d\/([^/]+)/);
-  if(match){
-    const id=match[1];
+  const id=extractDriveFileId(u);
+  if(id){
     return [
-      `https://drive.google.com/thumbnail?id=${id}&sz=${size}`,
-      `https://drive.google.com/uc?export=view&id=${id}`,
-      `https://lh3.googleusercontent.com/d/${id}=${size}`
+      `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=${size}`,
+      `https://drive.google.com/uc?export=view&id=${encodeURIComponent(id)}`,
+      `https://drive.usercontent.google.com/download?id=${encodeURIComponent(id)}&export=view&confirm=t`,
+      `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=${size}`
     ];
   }
   return [u];
+}
+function openProductImageModal(url, altText){
+  const candidates=pieceImageCandidates(url,"w2000");
+  if(!candidates.length)return;
+  const img=document.getElementById("productImageLarge");
+  let attempt=0;
+  img.referrerPolicy="no-referrer";
+  img.onerror=()=>{
+    attempt++;
+    if(attempt<candidates.length){img.src=candidates[attempt];return;}
+    img.removeAttribute("src");
+  };
+  img.alt=altText||"Imagem ampliada do produto";
+  img.src=candidates[0];
+  document.getElementById("productImageModal").classList.remove("hidden");
+}
+function closeProductImageModal(){
+  document.getElementById("productImageModal").classList.add("hidden");
+  document.getElementById("productImageLarge").removeAttribute("src");
 }
 function openPieceImageModal(url, altText){
   const candidates=pieceImageCandidates(url,"w2000");
@@ -296,6 +329,7 @@ function openPartsModal(){
         imageButton.title="Clique para ampliar a imagem";
         const img=document.createElement("img");
         img.alt=`Imagem da peça ${codeKey}`;
+        img.referrerPolicy="no-referrer";
         const candidates=pieceImageCandidates(piece.imageUrl,"w500");
         let attempt=0;
         img.onerror=()=>{
@@ -335,9 +369,15 @@ function closePartsModal(){document.getElementById("partsModal").classList.add("
 partsLink.addEventListener("click",e=>{e.preventDefault();openPartsModal()});
 document.getElementById("closePartsModal").addEventListener("click",closePartsModal);
 document.getElementById("partsModal").addEventListener("click",e=>{if(e.target.id==="partsModal")closePartsModal()});
+document.getElementById("closeProductImageModal").addEventListener("click",closeProductImageModal);
+document.getElementById("productImageModal").addEventListener("click",e=>{if(e.target.id==="productImageModal")closeProductImageModal()});
+document.getElementById("productImage").addEventListener("click",()=>{
+  const p=products.find(x=>x.sku===selectedSku)||products.find(x=>x.sku===skuEl.textContent);
+  if(p&&p.imageUrl) openProductImageModal(p.imageUrl,`Imagem do produto ${p.sku} — ${p.model}`);
+});
 document.getElementById("closePieceImageModal").addEventListener("click",closePieceImageModal);
 document.getElementById("pieceImageModal").addEventListener("click",e=>{if(e.target.id==="pieceImageModal")closePieceImageModal()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closePieceImageModal();closeVideoModal();closePartsModal()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeProductImageModal();closePieceImageModal();closeVideoModal();closePartsModal()}});
 
 function hideProduct(){productPanel.classList.add("hidden");detailsPanel.classList.add("hidden");document.getElementById("orientationPanel").classList.add("hidden")}
 function showProduct(p){noResults.classList.add("hidden");productPanel.classList.remove("hidden");detailsPanel.classList.remove("hidden");document.getElementById("orientationPanel").classList.remove("hidden");renderDetails(p)}
